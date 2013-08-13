@@ -8,7 +8,7 @@
 #include <getopt.h>
 
 #define DEFAULT_MAX   1000
-#define RANGE_MAX     100000
+#define RANGE_MAX     1000000000ULL
 
 typedef unsigned long long (*multsum_fn)(unsigned long long);
 
@@ -95,18 +95,10 @@ static unsigned long long generate(unsigned long long max)
 static unsigned long long mult_sum(unsigned long long mult, unsigned long long max)
 {
   unsigned long long div;
-  unsigned long long rem;
-  unsigned long long sum;
 
   div = max / mult;
-  rem = max - (div * mult);
 
-  sum = mult * (div * div + div) / 2;
-  if (rem == 0) {
-    sum -= max;
-  }
-
-  return sum;
+  return mult * (div * div + div) / 2;
 }
 
 static unsigned long long const_time(unsigned long long max)
@@ -114,15 +106,13 @@ static unsigned long long const_time(unsigned long long max)
   unsigned long long three_sum;
   unsigned long long five_sum;
   unsigned long long common_sum;
-  unsigned long long sum;
 
+  max -= 1;  // don't count max itself
   three_sum = mult_sum(3, max);
   five_sum = mult_sum(5, max);
   common_sum = mult_sum(3 * 5, max);
 
-  sum = three_sum + five_sum - common_sum;
-
-  return sum;
+  return three_sum + five_sum - common_sum;
 }
 
 static multsum_fn method_to_func(const char *name)
