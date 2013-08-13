@@ -45,7 +45,52 @@ static int brute_force(int max)
 
   for (i = 1; i < max; i++) {
     if (i % 3 == 0 || i % 5 == 0) {
+      printf("%d\n", i);
       sum += i;
+    }
+  }
+
+  return sum;
+}
+
+static int generate(int max)
+{
+  int sum = 0;
+  int three = 3;
+  int five = 5;
+  int prev_three = 0;
+  int prev_five = 0;
+
+  while (three < max || five < max) {
+    if (three < max && three != prev_three) {
+      printf("%d\n", three);
+      // only count multiples of 3 less than max and we haven't counted it
+      // before
+      sum += three;
+    }
+    if (five < max && five != three && five != prev_five) {
+      printf("%d\n", five);
+      // only count multiples of 5 less than max, if it's not also a mult of 3,
+      // and we haven't counted it before
+      sum += five;
+    }
+
+    // set prev values so we don't count the same number twice
+    prev_three = three;
+    prev_five = five;
+
+    if (three < five) {
+      // multiples of 3 are lagging, increment
+      three += 3;
+    }
+    else if (five < three) {
+      // multiples of 5 are lagging, increment
+      five += 5;
+    }
+    else {
+      // multiple of 3 and 5, increment both
+      three += 3;
+      five += 5;
     }
   }
 
@@ -56,6 +101,9 @@ static multsum_fn method_to_func(const char *name)
 {
   if (!strcmp(name, "brute_force")) {
     return brute_force;
+  }
+  else if (!strcmp(name, "generate")) {
+    return generate;
   }
   else {
     return NULL;
