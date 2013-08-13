@@ -45,7 +45,6 @@ static int brute_force(int max)
 
   for (i = 1; i < max; i++) {
     if (i % 3 == 0 || i % 5 == 0) {
-      printf("%d\n", i);
       sum += i;
     }
   }
@@ -62,14 +61,12 @@ static int generate(int max)
   int prev_five = 0;
 
   while (three < max || five < max) {
-    if (three < max && three != prev_three) {
-      printf("%d\n", three);
-      // only count multiples of 3 less than max and we haven't counted it
-      // before
+    if (three < max && three != five && three != prev_three) {
+      // only count multiples of 3 less than max, if it's not also a mult of 5,
+      // and we haven't counted it before
       sum += three;
     }
-    if (five < max && five != three && five != prev_five) {
-      printf("%d\n", five);
+    if (five < max && three != five && five != prev_five) {
       // only count multiples of 5 less than max, if it's not also a mult of 3,
       // and we haven't counted it before
       sum += five;
