@@ -10,11 +10,11 @@
 #define DEFAULT_MAX   1000
 #define RANGE_MAX     100000
 
-typedef int (*multsum_fn)(int);
+typedef unsigned long long (*multsum_fn)(unsigned long long);
 
 struct my_opts {
   multsum_fn func;
-  int max;
+  unsigned long long max;
 };
 
 static void print_usage(const char *program)
@@ -38,10 +38,10 @@ static void print_usage(const char *program)
   }
 }
 
-static int brute_force(int max)
+static unsigned long long brute_force(unsigned long long max)
 {
-  int i;
-  int sum = 0;
+  unsigned long long i;
+  unsigned long long sum = 0;
 
   for (i = 1; i < max; i++) {
     if (i % 3 == 0 || i % 5 == 0) {
@@ -52,13 +52,13 @@ static int brute_force(int max)
   return sum;
 }
 
-static int generate(int max)
+static unsigned long long generate(unsigned long long max)
 {
-  int sum = 0;
-  int three = 3;
-  int five = 5;
-  int prev_three = 0;
-  int prev_five = 0;
+  unsigned long long sum = 0;
+  unsigned long long three = 3;
+  unsigned long long five = 5;
+  unsigned long long prev_three = 0;
+  unsigned long long prev_five = 0;
 
   while (three < max || five < max) {
     if (three < max && three != five && three != prev_three) {
@@ -79,12 +79,10 @@ static int generate(int max)
     if (three < five) {
       // multiples of 3 are lagging, increment
       three += 3;
-    }
-    else if (five < three) {
+    } else if (five < three) {
       // multiples of 5 are lagging, increment
       five += 5;
-    }
-    else {
+    } else {
       // multiple of 3 and 5, increment both
       three += 3;
       five += 5;
@@ -94,15 +92,48 @@ static int generate(int max)
   return sum;
 }
 
+static unsigned long long mult_sum(unsigned long long mult, unsigned long long max)
+{
+  unsigned long long div;
+  unsigned long long rem;
+  unsigned long long sum;
+
+  div = max / mult;
+  rem = max - (div * mult);
+
+  sum = mult * (div * div + div) / 2;
+  if (rem == 0) {
+    sum -= max;
+  }
+
+  return sum;
+}
+
+static unsigned long long const_time(unsigned long long max)
+{
+  unsigned long long three_sum;
+  unsigned long long five_sum;
+  unsigned long long common_sum;
+  unsigned long long sum;
+
+  three_sum = mult_sum(3, max);
+  five_sum = mult_sum(5, max);
+  common_sum = mult_sum(3 * 5, max);
+
+  sum = three_sum + five_sum - common_sum;
+
+  return sum;
+}
+
 static multsum_fn method_to_func(const char *name)
 {
   if (!strcmp(name, "brute_force")) {
     return brute_force;
-  }
-  else if (!strcmp(name, "generate")) {
+  } else if (!strcmp(name, "generate")) {
     return generate;
-  }
-  else {
+  } else if (!strcmp(name, "const_time")) {
+    return const_time;
+  } else {
     return NULL;
   }
 }
@@ -136,12 +167,11 @@ static int parse_opts(int argc, char **argv, struct my_opts *opts)
 
       case 2:
         errno = 0;
-        val = strtol(optarg, &endp, 10);
+        val = strtoull(optarg, &endp, 10);
         if (errno || *endp || val < 1 || val > RANGE_MAX) {
           printf("Invalid maximum number\n");
           rv = -1;
-        }
-        else {
+        } else {
           opts->max = val;
         }
         break;
@@ -157,7 +187,7 @@ static int parse_opts(int argc, char **argv, struct my_opts *opts)
 
 int main(int argc, char **argv)
 {
-  int sum;
+  unsigned long long sum;
   struct my_opts opts;
 
   if (parse_opts(argc, argv, &opts) < 0) {
@@ -167,7 +197,7 @@ int main(int argc, char **argv)
 
   sum = opts.func(opts.max);
 
-  printf("sum = %d\n", sum);
+  printf("sum = %llu\n", sum);
 
   return EXIT_SUCCESS;
 }
