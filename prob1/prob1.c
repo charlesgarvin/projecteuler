@@ -24,11 +24,11 @@ static void print_usage(const char *program)
     " [--method=<method>] [--max=<max>]",
     "",
     "    <method> is the computation method you wish to use,",
-    "    brute_force, sieve or generate.  The default is brute_force.",
+    "    brute_force, generate or const_time.  The default is brute_force.",
     "",
     "    max is an integer representing the maximum number (i.e. sum of all",
-    "    multiples below <max>).  The value must be between 1 and 100000.  The",
-    "    default is 1000",
+    "    multiples below <max>).  The value must be between 1 and 1000000000.",
+    "    The default is 1000",
     NULL
   };
 
