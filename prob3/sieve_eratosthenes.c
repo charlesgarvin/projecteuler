@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "mymalloc.h" 
 #include "sieve_eratosthenes.h"
 
 struct sieve_s {
@@ -46,30 +49,30 @@ bool check_sieve_pos(sieve_t *s, uint64_t pos)
     uint64_t bit;
 
     if (pos > s->max) {
-        goto END;
+        return false;
     }
 
     byte = pos / 8;
     bit = pos % 8;
 
-    return !!(s->sieve[byte] &= 1 << bit);
+    return !!(s->sieve[byte] & (1 << bit));
 }
 
 sieve_t *new_sieve(uint64_t max)
 {
     sieve_t *rv;
 
-    rv = malloc(sizeof(*rv));
+    rv = mymalloc(sizeof(*rv));
 
     if (!rv) {
         return NULL;
     }
 
-    s->max = max;
-    s->max_bytes = (max_num / 8) + ((max_num % 8) ? 1 : 0);
-    rv->sieve = malloc(sizeof(s->max_bytes));
+    rv->max = max;
+    rv->max_bytes = (max / 8) + ((max % 8) ? 1 : 0);
+    rv->sieve = mymalloc(rv->max_bytes);
     if (!rv->sieve) {
-        free(rv);
+        myfree(rv);
         return NULL;
     }
 
@@ -79,34 +82,30 @@ sieve_t *new_sieve(uint64_t max)
 void free_sieve(sieve_t *s)
 {
     if (s) {
-        free(s.sieve);
-        free(s);
+        myfree(s->sieve);
+        myfree(s);
     }
 }
 
-void gen_sieve(sieve_t *s, uint64_t num)
+void gen_sieve(sieve_t *s)
 {
     uint64_t i;
     uint64_t j;
-    uint64_t byte;
-    uint64_t bit;
     uint64_t stop;
 
-    memset(sieve, 0xff, max);
-    clear_sieve_pos(sieve, max, 0);
-    clear_sieve_pos(sieve, max, 1);
+    memset(s->sieve, 0xff, s->max_bytes);
+    clear_sieve_pos(s, 0);
+    clear_sieve_pos(s, 1);
 
     stop = s->max / 2 + (s->max % 2);
     for (i = 2; i <= stop && i <= s->max; i++) {
-        byte = i / 8;
-        bit = i % 8;
-
+        putchar('\n');
         if (!check_sieve_pos(s, i)) {
             // already known non-prime, skip
             continue;
         }
 
-        for (j = 2 * i; j <= stop; j += i) {
+        for (j = 2 * i; j <= s->max; j += i) {
             clear_sieve_pos(s, j);
         }
     }
@@ -117,24 +116,23 @@ sieve_t *create_sieve(uint64_t max)
     sieve_t *rv;
 
     rv = new_sieve(max);
-    gen_sieve(s);
+    gen_sieve(rv);
+
+    return rv;
 }
 
 void print_sieve(sieve_t *s)
 {
-    uint64_t byte;
-    uint64_t bit;
+    uint64_t i;
     bool first = true;
 
-    for (byte = 0; byte <= s->max_byte; byte++) {
-        if (!first) {
-            printf(", ");
-            first = false;
-        }
-        for (bit = 0; bit < 8; bit++) {
-            if (sieve[byte] & (1 << bit)) {
-                printf("%llu", (unsigned long long) (byte * 8 + bit));
+    for (i = 0; i < s->max; i++) {
+        if (check_sieve_pos(s, i)) {
+            if (!first) {
+                printf(", ");
             }
+            printf("%llu", (unsigned long long) i);
+            first = false;
         }
     }
     putchar('\n');
